@@ -1,0 +1,33 @@
+services:
+    php:
+        build: dev-docker/php-fpm
+        container_name: example-app
+        working_dir: /app
+        environment:
+            - WEB_DOCUMENT_ROOT=/app/public
+            - PHP_MEMORY_LIMIT=-1
+        volumes:
+            - .:/app:cached
+        ports:
+            - "3180:80"
+            - "5173:5173"
+
+    database:
+        image: mysql:8.0.20
+        container_name: example-db
+        command: [
+            '--character-set-server=utf8mb4',
+            '--collation-server=utf8mb4_unicode_ci',
+            '--default-authentication-plugin=mysql_native_password'
+        ]
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_ROOT_PASSWORD: 'root'
+        ports:
+            - '3106:3306'
+        volumes:
+            - db-data:/var/lib/mysql
+volumes:
+    db-data:
