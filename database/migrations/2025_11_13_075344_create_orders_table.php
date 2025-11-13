@@ -13,12 +13,9 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('sneakers');
-            $table->unsignedBigInteger('sneaker_id');
-            $table->foreign('sneaker_id')->references('id')->on('sneakers');
-            $table->unsignedBigInteger('customizer_sneaker_id');
-            $table->foreign('customizer_sneaker_id')->references('id')->on('customizer_sneakers');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->decimal('total_price');
+            $table->enum('status', ['pending', 'paid', 'shipped', 'cancelled'])->default('pending');
             $table->timestamps();
         });
     }

@@ -1,7 +1,9 @@
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { useState, useMemo } from 'react';
+import { router } from '@inertiajs/react';
 import * as THREE from 'three';
+import { ShoppingCart } from 'lucide-react';
 
 function ShoeModel({
   laceColor,
@@ -121,44 +123,40 @@ export default function ShoeCustomizer() {
     setSaveMessage('');
   };
 
-  const saveCustomization = async () => {
+
+    const saveCustomization = () => {
     setIsSaving(true);
     setSaveMessage('');
 
     const customization = {
-      lace_color: laceColor,
-      mesh_color: meshColor,
-      stripe_color: stripeColor,
-      sole_color: soleColor,
-      patch_color: patchColor,
-      band_color: bandColor
+        lace_color: laceColor,
+        mesh_color: meshColor,
+        stripe_color: stripeColor,
+        sole_color: soleColor,
+        patch_color: patchColor,
+        band_color: bandColor
     };
 
-    try {
-      const response = await fetch('/api/shoe-customizations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+    router.post('/cart/add-custom-shoe', {
+        product_id: 1,
+        customizations: customization,
+        quantity: 1,
+        price: 39,
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            setSaveMessage('✓ Hozzáadva a kosárhoz!');
+            setIsSaving(false);
+            setTimeout(() => setSaveMessage(''), 3000);
         },
-        body: JSON.stringify(customization)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSaveMessage('✓ Sikeresen elmentve!');
-        console.log('Mentett customization:', data);
-      } else {
-        setSaveMessage('✗ Hiba történt a mentés során');
-      }
-    } catch (error) {
-      console.error('Mentési hiba:', error);
-      setSaveMessage('✗ Hiba történt a mentés során');
-    } finally {
-      setIsSaving(false);
-      setTimeout(() => setSaveMessage(''), 3000);
-    }
-  };
+        onError: (errors) => {
+            console.error('Hiba:', errors);
+            setSaveMessage('✗ Hiba történt a mentés során');
+            setIsSaving(false);
+            setTimeout(() => setSaveMessage(''), 3000);
+        }
+    });
+};
 
   const currentPart = parts.find(p => p.id === selectedPart);
 
@@ -257,7 +255,7 @@ export default function ShoeCustomizer() {
                 disabled={isSaving}
                 className="px-6 py-2 bg-black text-white text-sm font-semibold rounded-full hover:bg-gray-800 transition-all duration-300 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSaving ? 'MENTÉS...' : 'MENTÉS'}
+                {isSaving ? '...' : <ShoppingCart className="w-4 h-4" />}
               </button>
               <button
                 onClick={resetColors}
